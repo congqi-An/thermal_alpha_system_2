@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>基于计算机视觉和轻量VLM的干涉法测量热膨胀智能实验系统</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- 科研 HUD 字体: Rajdhani(标题/标签) + JetBrains Mono(数据); 离线时自动回退系统字体 -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@14.0.0/marked.min.js"></script>
+</head>
+<body>
+
+<!-- ═══ 顶栏 ═══ -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="logo-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+      </svg>
+    </div>
+    <div class="topbar-title">
+      <h1>干涉法测量热膨胀 · 智能实验系统</h1>
+      <span class="subtitle">He-Ne 632.8nm · 黄铜 H62 · α 测定</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="status-badges">
+      <span class="badge" id="badge-camera"><i></i>相机</span>
+      <button class="reconnect-btn" onclick="reconnectCamera()" title="重连相机">↻</button>
+      <span class="badge" id="badge-temp"><i></i>温控</span>
+      <button class="reconnect-btn" onclick="reconnectTemp()" title="重连温控器">↻</button>
+      <span class="badge" id="badge-scan"><i></i>扫描</span>
+      <span class="badge" id="badge-cnn" title="光心/ROI 实际来源"><i></i>CNN</span>
+      <button class="mode-btn" id="btn-center-mode" onclick="cycleCenterMode()"
+              title="光心/ROI 判定模式: 点击切换 CNN→CV">判定:CNN</button>
+    </div>
+    <button class="btn-icon" onclick="openSettings()" title="系统设置">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68 1.65 1.65 0 0 0 10 3.17V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<!-- ═══ 主区域 ═══ -->
+<main class="main-grid">
+
+  <!-- 左栏: 实时数据 + 波形 + 温度 -->
+  <aside class="left-panel">
+    <div class="realtime-bar">
+      <div class="rt-item"><span class="rt-label">T</span><span class="rt-val" id="ov-t">--</span><span class="rt-unit">°C</span></div>
+      <div class="rt-item"><span class="rt-label">N</span><span class="rt-val" id="ov-n">--</span></div>
+      <div class="rt-item"><span class="rt-label">ΔL</span><span class="rt-val" id="ov-dl">--</span><span class="rt-unit">μm</span></div>
+      <div class="rt-item"><span class="rt-label">Q</span><span class="rt-val" id="ov-q">--</span></div>
+      <div class="rt-item"><span class="rt-label">r₀</span><span class="rt-val" id="ov-r0">--</span></div>
+    </div>
+    <div class="charts-col">
+      <div class="chart-card">
+        <div class="chart-header"><span class="chart-dot" style="--c:var(--success)"></span>φ(s) 外推 · N=<span id="diag-npoint" class="diag-val">--</span></div>
+        <canvas id="phi-chart" width="240" height="120"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header"><span class="chart-dot" style="--c:var(--warning, #fbbf24)"></span>通道分散度 · σ=<span id="diag-sigma" class="diag-val">--</span></div>
+        <canvas id="disp-chart" width="240" height="120"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header"><span class="chart-dot" style="--c:var(--accent)"></span>温度 PV(t)</div>
+        <canvas id="temp-chart" width="240" height="120"></canvas>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 中间: 视频 -->
+  <section class="video-section">
+    <div class="video-container">
+      <canvas id="video" width="800" height="600"></canvas>
+      <!-- HUD 四角取景框 -->
+      <div class="hud-c hud-tl"></div>
+      <div class="hud-c hud-tr"></div>
+      <div class="hud-c hud-bl"></div>
+      <div class="hud-c hud-br"></div>
+      <div class="video-overlay">
+        <div class="ov-chip" id="ov-state-chip">IDLE</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 右: 控制面板 -->
+  <aside class="control-panel">
+    <nav class="panel-tabs">
+      <button class="ptab active" data-tab="vlm">AI</button>
+      <button class="ptab" data-tab="temp">温控</button>
+      <button class="ptab" data-tab="camera">相机</button>
+      <button class="ptab" data-tab="scan">扫描</button>
+    </nav>
+
+    <!-- 温控面板 -->
+    <div class="panel-body" id="panel-temp">
+      <div class="readout-grid">
+        <div class="readout-card primary">
+          <span class="ro-label">PV 当前温度</span>
+          <span class="ro-value" id="pv">--</span>
+          <span class="ro-unit">°C</span>
+        </div>
+        <div class="readout-card">
+          <span class="ro-label">SV 设定</span>
+          <span class="ro-value" id="sv">--</span>
+          <span class="ro-unit">°C</span>
+        </div>
+        <div class="readout-card">
+          <span class="ro-label">MV 输出</span>
+          <span class="ro-value" id="mv">--</span>
+          <span class="ro-unit">%</span>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-row">
+          <input id="sv-input" type="number" placeholder="目标温度 °C" step="0.1">
+          <button class="btn primary" onclick="setSV()">设定 SV</button>
+        </div>
+        <div class="ctrl-row">
+          <button class="btn success flex1" onclick="heat('on')" title="PID 控温到当前 SV (已自整定, 过冲<0.3°C)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+            PID 加热
+          </button>
+          <button class="btn danger flex1" onclick="heat('off')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/></svg>
+            加热 OFF
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 相机面板 -->
+    <div class="panel-body" id="panel-camera">
+      <div class="ctrl-group">
+        <div class="ctrl-row">
+          <button class="btn success flex1" onclick="camStart()">开始取流</button>
+          <button class="btn danger flex1" onclick="camStop()">停止取流</button>
+        </div>
+        <div class="ctrl-row">
+          <button class="btn flex1" onclick="camCapture()" title="保存当前帧到 captures/ 供 CNN 微调训练">采集训练帧 <span id="cap-count"></span></button>
+        </div>
+      </div>
+      <!-- 视频模拟: 加载本地视频当相机输入, 走完整分析链路 (光心/Q/计数/信号图) -->
+      <div class="video-sim">
+        <div class="video-sim-title">视频模拟 (无硬件回放实验视频)</div>
+        <div class="ctrl-row">
+          <input id="video-path" type="text" class="video-path-input"
+                 placeholder="视频完整路径, 如 D:\copy_data\vedio\Video_28.7-30.7(22.0).avi">
+        </div>
+        <div class="ctrl-row">
+          <button class="btn flex1" onclick="videoLoad()">加载并播放</button>
+          <button class="btn sm" id="video-play-btn" onclick="videoToggle()">暂停</button>
+          <button class="btn sm" onclick="videoCtrl('rewind')">重播</button>
+          <button class="btn danger sm" onclick="videoCtrl('unload')">卸载</button>
+        </div>
+        <div class="video-sim-status" id="video-status">未加载 (加载后接管画面, 用测量面板开始计数)</div>
+      </div>
+      <div class="param-list">
+        <div class="param-item">
+          <span class="param-name">曝光 (μs)</span>
+          <div class="param-ctrl"><input id="exp" type="number" value="20000"><button class="btn sm" onclick="setExp()">设</button></div>
+        </div>
+        <div class="param-item">
+          <span class="param-name">增益 (dB)</span>
+          <div class="param-ctrl"><input id="gain" type="number" value="0" step="0.1"><button class="btn sm" onclick="setGain()">设</button></div>
+        </div>
+        <div class="param-item">
+          <span class="param-name">帧率 (fps)</span>
+          <div class="param-ctrl"><input id="fps" type="number" value="20"><button class="btn sm" onclick="setFps()">设</button></div>
+        </div>
+      </div>
+      <div class="info-box" id="cam-info">相机未连接</div>
+    </div>
+
+    <!-- 扫描面板 -->
+    <div class="panel-body" id="panel-scan">
+      <div class="scan-mode-tabs">
+        <button class="scan-mode-tab active" data-mode="temp" onclick="setScanMode('temp')">温度步进</button>
+        <button class="scan-mode-tab" data-mode="fringe" onclick="setScanMode('fringe')">N 步进</button>
+        <button class="scan-mode-tab" data-mode="free" onclick="setScanMode('free')">即时计数</button>
+      </div>
+      <div class="scan-mode-hint" id="scan-mode-hint">按温度步长分段, 每段升温稳定后结算 α</div>
+      <div class="param-list">
+        <div class="param-item scan-p-temp scan-p-fringe"><span class="param-name">起温 T1 (°C)</span><input id="t_start" type="number" value="30" step="0.5"></div>
+        <div class="param-item scan-p-temp scan-p-fringe"><span class="param-name">止温 T2 (°C)</span><input id="t_end" type="number" value="50" step="0.5"></div>
+        <div class="param-item scan-p-temp"><span class="param-name">步进 (°C)</span><input id="step" type="number" value="5" step="0.5"></div>
+        <div class="param-item scan-p-temp"><span class="param-name">稳定时间 (s)</span><input id="stab" type="number" value="3"></div>
+        <div class="param-item scan-p-fringe" style="display:none"><span class="param-name">每段条纹数 N</span><input id="n_step" type="number" value="20" step="1" min="1"></div>
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-row">
+          <button class="btn flex1" onclick="scanConfig()">应用配置</button>
+          <button class="btn success flex1" onclick="scanStart()">启动扫描</button>
+          <button class="btn danger" onclick="scanStop()">停止</button>
+        </div>
+      </div>
+      <div class="scan-progress">
+        <div class="progress-track"><div class="progress-fill" id="progress-bar"></div></div>
+        <span class="progress-text" id="scan-msg">空闲</span>
+      </div>
+    </div>
+
+    <!-- AI Agent 面板 (默认首屏) -->
+    <div class="panel-body active" id="panel-vlm">
+      <!-- Agent 控制栏 -->
+      <div class="agent-toolbar">
+        <button class="btn success sm" onclick="guideStart()" title="开始实验(分步指导)">▶ 开始实验</button>
+        <button class="btn sm" id="btn-guide-prev" onclick="guidePrev()" title="上一阶段" style="display:none">◀ 上一步</button>
+        <button class="btn primary sm" id="btn-guide-next" onclick="guideNext()" title="下一阶段" style="display:none">下一步 ▶</button>
+        <button class="btn sm" id="btn-guide-report" onclick="generateReport()" title="生成实验报告 PDF (实测数据+LLM结论+VLM评价+图表)" style="display:none">📄 生成报告</button>
+        <button class="btn sm" id="btn-upload-coarse" onclick="document.getElementById('coarse-photo-input').click()" title="上传光路粗调光点照片 (进报告图1)" style="display:none">📷 粗调光点</button>
+        <button class="btn danger sm" onclick="agentStop()" title="结束指导">■</button>
+        <input type="file" id="coarse-photo-input" accept="image/*" style="display:none" onchange="uploadCoarsePhoto(event)">
+        <span class="agent-phase" id="agent-phase">IDLE</span>
+        <span class="agent-step" id="agent-step"></span>
+        <button class="btn-icon sm" onclick="clearChat()" title="清空对话">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </div>
+      <!-- 实验阶段指示器 -->
+      <div class="exp-phase-bar" id="exp-phase-bar" style="display:none">
+        <span class="exp-phase-dot"></span>
+        <span id="exp-phase-text">准备中</span>
+        <span class="exp-phase-metrics" id="exp-metrics"></span>
+      </div>
+      <!-- 实时叙事流 -->
+      <div class="narration-feed" id="narration-feed" style="display:none"></div>
+      <!-- 聊天消息区 -->
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-msg assistant">
+          <div class="chat-bubble">你好！我是实验 Agent 👋<br><br><b>📖 本系统使用方法：</b><br>① <b>看硬件状态</b>：顶栏徽章显示相机/温控/CNN 在线情况（绿色=在线，红色=离线可点 ↻ 重连）；<br>② <b>启动取流</b>：右侧“相机”页点“开始取流”，画面出现清晰干涉圆环（光路未调好可先问我）；<br>③ <b>开始实验</b>：点击上方“▶ 开始实验”，我会按 9 个阶段全程指导你（开题安全→样品安装→光路调节→相机成像→升温扫描→数据处理→报告），每阶段有清晰的操作与通过标准；<br>④ <b>查看结果</b>：扫描完成后，底栏显示 α 均值与各段明细，可让我分析误差。<br><br>也可以随时问我光路、原理、异常处理等问题。现在点“▶ 开始实验”吧！</div>
+        </div>
+      </div>
+      <!-- 快捷指令（阶段感知，JS 动态渲染） -->
+      <div class="chat-presets" id="chat-presets">
+        <button class="chip" onclick="agentChat('评估当前条纹质量，是否适合测量')">评估条纹</button>
+        <button class="chip" onclick="agentChat('检查系统状态')">检查硬件</button>
+        <button class="chip" onclick="agentChat('解释α=N·λ/2/(L₀·ΔT)原理')">α原理</button>
+        <button class="chip" onclick="agentChat('现在实验进展如何？')">实验进展</button>
+      </div>
+      <!-- 输入区 -->
+      <div class="chat-input-area">
+        <!-- + 上传文件/图片 -->
+        <button class="btn-icon" onclick="document.getElementById('file-input').click()" title="上传文件/图片">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        </button>
+        <button class="btn-icon" onclick="attachFrame()" title="附带当前画面(点击拍快照)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </button>
+        <!-- 联网搜索 (🌐 亮=开, 暗=关) -->
+        <button id="web-search-btn" class="web-search-btn" onclick="toggleWebSearch()" title="联网搜索">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18"/><path d="M12 3a15 15 0 0 0 0 18"/></svg>
+        </button>
+        <!-- 深度思考开关 (类似 DeepSeek app 原子环绕图标): 亮=开, 暗=关, 无文字 -->
+        <button id="think-toggle" class="think-toggle" onclick="toggleThinking()" title="深度思考开关">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+            <circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/>
+            <ellipse cx="12" cy="12" rx="8.5" ry="3.4" transform="rotate(45 12 12)"/>
+            <ellipse cx="12" cy="12" rx="8.5" ry="3.4" transform="rotate(135 12 12)"/>
+            <circle cx="18" cy="18" r="1.4" fill="currentColor" stroke="none"/>
+          </svg>
+        </button>
+        <!-- 语音输入 (浏览器语音识别, 需麦克风权限) -->
+        <button id="voice-btn" class="btn-icon voice-btn" onclick="toggleVoice()" title="语音输入">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v4"/></svg>
+        </button>
+        <input id="chat-input" type="text" placeholder="输入消息…" onkeydown="if(event.key==='Enter' && !streaming)agentChat()">
+        <!-- 生成中发送按钮变停止方块 (AbortController 中断 SSE) -->
+        <button id="chat-send-btn" class="btn primary sm" onclick="if(streaming){stopStream()}else{agentChat()}">➤</button>
+      </div>
+      <!-- 隐藏文件输入 ("+ 上传"触发) -->
+      <input type="file" id="file-input" accept="image/*,.txt,.md,.csv,.json,.log,.pdf,.docx,.py" style="display:none" onchange="handleFileSelect(event)">
+      <!-- 附带画面预览 (点击拍摄后显示, 发送时随消息进入对话) -->
+      <div class="attach-preview" id="attach-preview" style="display:none">
+        <img id="attach-preview-img" alt="预览">
+        <span class="attach-preview-hint">将随下一条消息发送并交给模型分析</span>
+        <button class="attach-preview-x" onclick="clearAttach()" title="取消附带">✕</button>
+      </div>
+      <!-- 上传文件预览 (文本/PDF/DOCX 提取后显示) -->
+      <div class="attach-preview file-preview" id="file-preview" style="display:none">
+        <span class="file-preview-icon">📄</span>
+        <span id="file-preview-name" class="file-preview-name">文件</span>
+        <button class="attach-preview-x" onclick="clearFile()" title="取消">✕</button>
+      </div>
+      <!-- Agent 日志(实验进行时显示) -->
+      <div class="agent-log" id="agent-log" style="display:none"></div>
+    </div>
+  </aside>
+
+  <!-- ═══ 底部: 总测量结果(左) + 段表(右), 顶部齐平 ═══ -->
+  <footer class="bottom-bar" id="bottom-bar">
+    <div class="bottom-content">
+      <div class="alpha-display">
+        <span class="alpha-label">总测量结果</span>
+        <div class="alpha-value">
+          <span id="alpha-avg">--</span>
+          <span class="alpha-pm">±<span id="alpha-std">--</span></span>
+          <span class="alpha-unit">×10⁻⁶/°C</span>
+        </div>
+        <div class="alpha-ref">参考 20.8 · 误差 <b id="alpha-err">--</b>%</div>
+      </div>
+      <div class="seg-table-wrap" id="seg-table-wrap">
+        <table id="seg-table">
+          <thead><tr><th>段</th><th>T1</th><th>T2</th><th>N</th><th>α</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <button class="btn outline" onclick="downloadCSV()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        CSV
+      </button>
+    </div>
+  </footer>
+</main>
+
+<!-- 对话图片灯箱 (点击对话中的图片放大查看) -->
+<div class="img-lightbox" id="img-lightbox" style="display:none" onclick="this.style.display='none'">
+  <img id="lightbox-img" alt="放大查看">
+</div>
+
+<!-- ═══ 设置弹窗 ═══ -->
+<div class="modal-overlay" id="settings-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>系统设置</h2>
+      <button class="btn-icon" onclick="closeSettings()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-tabs">
+      <button class="mtab active" onclick="switchTab('camera')">摄像头</button>
+      <button class="mtab" onclick="switchTab('modbus')">温控</button>
+      <button class="mtab" onclick="switchTab('scan')">扫描</button>
+      <button class="mtab" onclick="switchTab('algo')">算法</button>
+      <button class="mtab" onclick="switchTab('vlm')">VLM</button>
+    </div>
+    <div class="modal-body">
+      <!-- 摄像头 -->
+      <div class="tab-pane active" id="pane-camera">
+        <div class="cfg-row"><span>型号</span><b id="set-cam-model">MV-CS050-60GC</b></div>
+        <div class="cfg-row">
+          <span>质量门控</span>
+          <button class="btn sm" id="btn-quality-gate" onclick="toggleQualityGate()">开</button>
+          <small style="margin-left:6px">关 = CNN质量头不参与计数决策</small>
+        </div>
+        <div class="cfg-field"><label>曝光 μs</label><input id="set-exp" type="number"><button class="btn sm" onclick="applyCameraExp()">应用</button></div>
+        <div class="cfg-field"><label>增益 dB</label><input id="set-gain" type="number" step="0.1"><button class="btn sm" onclick="applyCameraGain()">应用</button></div>
+        <div class="cfg-field"><label>帧率 fps</label><input id="set-fps" type="number"><button class="btn sm" onclick="applyCameraFps()">应用</button></div>
+        <div class="cfg-field"><label>Gamma</label><input id="set-gamma" type="number" step="0.1"><button class="btn sm" onclick="applyGamma()">应用</button></div>
+        <div class="cfg-field"><label>黑电平</label><input id="set-blk" type="number"><button class="btn sm" onclick="applyBlack()">应用</button></div>
+        <div class="ctrl-row" style="margin-top:8px">
+          <button class="btn sm" onclick="applyAutoExp(true)">自动曝光 ON</button>
+          <button class="btn sm danger" onclick="applyAutoExp(false)">手动 OFF</button>
+        </div>
+        <div class="cfg-divider">高级参数（任意海康参数）</div>
+        <div class="cfg-field">
+          <select id="cam-param"></select>
+          <input id="cam-param-val" type="number" step="any" style="width:80px">
+          <button class="btn sm" onclick="applyCamParam()">应用</button>
+        </div>
+        <div class="meta-text">含白平衡/对比度/锐度/像素格式/ROI/Binning/翻转/触发等</div>
+      </div>
+      <!-- 温控 -->
+      <div class="tab-pane" id="pane-modbus">
+        <div class="cfg-row"><span>设备</span><b id="set-mb-dev">LU-926U</b></div>
+        <div class="cfg-row"><span>COM 口</span><b id="set-mb-port">--</b><small>(改 config.py 重启)</small></div>
+        <div class="cfg-row"><span>波特率</span><b id="set-mb-baud">--</b></div>
+        <div class="cfg-row"><span>从站地址</span><b id="set-mb-slave">--</b></div>
+        <div class="cfg-field"><label>设定温度 SV</label><input id="set-sv" type="number" step="0.1"><button class="btn sm" onclick="applySetSV()">应用</button></div>
+        <div class="cfg-divider">高级寄存器（PID/死区/模式等）</div>
+        <div class="cfg-field">
+          <select id="temp-reg"></select>
+          <input id="temp-reg-val" type="number" step="any" style="width:80px">
+          <button class="btn sm" onclick="applyTempReg()">写</button>
+          <button class="btn sm" onclick="readTempReg()">读</button>
+        </div>
+      </div>
+      <!-- 扫描 -->
+      <div class="tab-pane" id="pane-scan">
+        <div class="cfg-field"><label>起温 T1</label><input id="set-t1" type="number" step="0.5"></div>
+        <div class="cfg-field"><label>止温 T2</label><input id="set-t2" type="number" step="0.5"></div>
+        <div class="cfg-field"><label>步进</label><input id="set-step" type="number" step="0.5"></div>
+        <div class="cfg-field"><label>稳定 s</label><input id="set-stab" type="number"></div>
+        <div class="cfg-field"><label>稳定带宽</label><input id="set-band" type="number" step="0.1" disabled></div>
+        <button class="btn success" onclick="applyScanCfg()" style="margin-top:10px">应用扫描配置</button>
+      </div>
+      <!-- 算法 -->
+      <div class="tab-pane" id="pane-algo">
+        <div class="cfg-row"><span>样品长度 L0</span><b id="set-l0"></b> mm</div>
+        <div class="cfg-row"><span>波长 λ</span><b id="set-lam"></b> nm</div>
+        <div class="cfg-row"><span>参考 α</span><b id="set-ref"></b> ×10⁻⁶/K</div>
+        <div class="cfg-row"><span>计数 r0</span><b id="set-r0s"></b> px</div>
+        <div class="cfg-row"><span>质量阈值</span><b id="set-qt"></b></div>
+        <div class="meta-text" style="margin-top:10px">算法参数改 config.py 重启生效</div>
+      </div>
+      <!-- VLM / Agent -->
+      <div class="tab-pane" id="pane-vlm">
+        <div class="cfg-row"><span>模型</span><b id="set-vlm-model">Qwen3-VL 4B (Ollama)</b></div>
+        <div class="cfg-row"><span>服务</span><b id="set-vlm-status">localhost:11434</b></div>
+        <div class="cfg-divider">推理参数（实时生效）</div>
+        <div class="cfg-field"><label>温度</label><input id="set-ai-temp" type="number" value="0.5" min="0" max="1" step="0.1"><small>0=精确 1=创造性</small></div>
+        <div class="cfg-field"><label>最大输出</label><input id="set-ai-maxtok" type="number" value="2048" min="128" max="8192" step="128"><small>tokens</small></div>
+        <button class="btn success" onclick="applyAiCfg()" style="margin-top:10px">应用 AI 参数</button>
+        <div class="meta-text" style="margin-top:8px">推理速度 ~115 t/s 文本 | ~73 t/s 图片</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>

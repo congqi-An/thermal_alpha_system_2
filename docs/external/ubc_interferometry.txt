@@ -1,0 +1,171 @@
+# UBC Laser Interferometry
+# chars=8664, cjk=0
+
+Expansion Coefficients Through Laser Interferometry
+1. Introduction
+The laser interferometer is based on the interferometer used by Michelson in 1887 to measure the  
+speed of the earth through the "ether". Although this was a negative experiment, interferometry has since  
+found an enormous number of applications and we will explore one of them in this experiment. The  
+interferometer takes a single beam of light, splits it in two, allows each beam to travel a separate path and  
+finally combines the two again into a single beam.
+Consider the intensity of the beam leaving the half silvered mirror. The electric field here is the sum of 
+that from both paths
+
+
+
+
+
+ ++
+
+
+
+
+ += tlEtlEE ω
+λ
+π
+ω
+λ
+π 2
+2cos
+2
+2cos 2010
+where λ is the wavelength of the light source. The intensity is then proportional to the time average of E2 
+(where < >t denotes time average).
+t
+t
+tlEtlEEI 
+
+
+
+ ++
+
+
+
+ +=∝ ω
+λ
+πω
+λ
+π 22cos22cos 201
+2
+0
+2
+( ) 
+
+
+ −+=
+λ
+π22cos1 21
+2
+0 llE
+We can see that relative changes in the path length will result in changes in the intensity from 
+zero to twice that of the original beam (make sure you understand why this is so). As a result the 
+interferometer can be used to measure changes in the optical path length of one of the arms, the other 
+1
+
+remaining fixed. The change in path length, Δl, required to go from one intensity peak to another is given 
+by Δl = λ/2
+The  interferometer  is  a  versatile  instrument,  which  can  be  used  to  measure  many  optical  
+properties such as index of refraction, absorption, reflection, etc. It is also very commonly used to  
+measure  changes  in  length,  as  is  clear  from  the  term  ( l1-l2)  in  the  expression  that  governs  the  
+interference fringes. Here we will use it to measure a change in distance in one of the interferometer  
+arms. One of the mirrors will be "attached" to the end of a bar of metal. This bar will be heated and  
+then allowed to cool. As the bar cools it will contract causing the mirror to move and thereby fringes to  
+change. This will allow us to measure the thermal expansion of the material in question , as well as the  
+cooling rate.
+Apparatus:
+The following schematic illustrates the apparatus to be used.
+A copper-constantan thermocouple is used to measure the temperature of the metal bar and the  
+thermal emf is measured by a digital meter. 
+The photo-resistor that detects changes to the interference pattern is also connected to the same  
+digital meter.  This meter is able to switch between a number of different inputs and can operate  
+under computer control..
+Prelab Questions:
+1. Tables are available to calibrate the copper-constantan thermocouple used to measure temperature 
+in this experiment (tables are in the lab or found in several handbooks, including chemistry’s 
+CRC Handbook or there is one at the end of the convection lab). Refer to one of these tables and 
+use the data to fit to a polynomial in the temperature range of your experiment (room temperature 
+to about 50 C). This fit to the calibration table will be useful in the performance of your 
+experiment and the subsequent analysis.
+2. The thermal expansion coefficient of copper near room temperature is 16.7x10-6 K-1. You will be 
+measuring this thermal expansion coefficient using a bar of copper (15 cm long) that is mounted 
+into one arm of an interferometer. Estimate how many fringes you will see in the interferometer 
+as the bar cools from 50 C to room temperature.  
+2
+laser
+mirrors
+beam 
+beam splitter
+Filter (allows red,
+but blocks most room 
+photodetector
+metal bar (sample)
+0 oC
+V
+thermocouple
+VV
+
+Procedure:
+Set up the interferometer as outlined in the appendix so that the photo-resistor is at the center of a  
+clear circular interference pattern; this might take a little time and patience! Note that the wavelength  
+for the He-Ne laser is 632.8 nm.  
+With the cylindrical copper bar in place, use the heat gun to warm the bar (and nothing else!) to 45-
+50 C. The object is to get a graph of the fringe count against temperature as the bar cools freely for  
+20-30 minutes.  Do a trial run or two to establish an appropriate procedure. There is a program  
+available on the computer that automates the collection of the temperature and photodetector output  
+measurements. 
+Try not to disturb the apparatus while the experiment is under way, vibrations and bumps will  
+adversely affect your interference pattern.
+Double-click on the program icon on the computer's desktop to start it.  Place the mouse on top of  
+each of the icons to see what they do.  Practice a few times to make sure you understand how the  
+program works.  You should probably leave the meter in 'strip-chart' mode so that you can see the  
+progress of the experiment as it happens.  The default values for the data rate and total number of  
+points are probably fine, although you should check this on your trial run.  Before each run, you  
+should press the 'reset to defaults' button, followed by 'init'  before starting the scan.  You can  
+monitor the measurements  from each voltage source by rotating the knob on the panel of the  
+HP34970A meter.  Channel 102 is the photodetector and channel 103 is the thermocouple.
+After you have collected the data you want, you can stop the run and save the data.  When you select  
+Save from the File menu, the data will appear in an editor window from which you can actually save  
+it.  The data has four columns, two of them are the time (in s) at which the associated measurement  
+was made.
+You will need a USB flash drive to retrieve the data from the computer.
+In the data analysis, the goal is to come up with an accurate way to “count” the fringes and thus  
+determine the expansion coefficient α =(1/L)(dL/dT) and the cooling rate of the bar.
+Repeat the procedure for the rectangular invar bar.
+For nickel-steel alloys the linear expansion coefficient is a function of the percentage of nickel; the  
+alloy for 36% nickel is called invar and for this optimum proportion the alloy has minimum  
+expansion coefficient. Because of its exceptionally low expansion coefficient, invar is used in  
+situations requiring low thermal strains. In the experiment there is the possibility that warming of the  
+base results in excess or shortfall of the observed expansion compared with the true expansion ...  
+which is more likely? Now, provided that the experimental situations are similar for the two cases  
+you can correct this systematic error by using the 'book'-value for invar to estimate a correction. Does  
+such a correction bring your observed value for copper closer to the tabulated values?
+Tabulated linear expansion coefficients:
+copper  16.7x10 -6   K-1     (1)
+     invar                  0.9x10 -6   K-1     (1) 
+0.8x10-6    K-1    (2)
+1) Physical and Chemical Constants, Kaye and Laby, 1948. 
+2) Handbook of Physics and Chemistry, 44th edition, 1963.
+3
+
+Appendix:    Interferometer Alignment
+The lens (beam-spreader) in its black square housing should not be placed over the laser exit  
+aperture until step 5 below.
+1. Start by covering the input to the photodetector with a piece of paper and then  
+removing the beam-spreader from the front of the laser.
+2. Get mirror A aligned by aiming the directly reflected beam (path abcda) so that it goes  
+back on itself.  There are three screws on the back of the mirror that can be used to  
+adjust its orientation.  Don't overtighten the screws!  If you loosen them enough, they  
+will fall out.  To identify the directly reflected beam, you can block mirror B.  The spot  
+you want should then be the only spot that doesn't move when you rotate the beam  
+splitter.  This is difficult to align perfectly, but try to get the reflected spot as close to  
+the outgoing beam from the laser as you can.
+3. Adjust the screws on mirror B so that they are all evenly loose, so that mirror B should  
+be close to aligned.  Now adjust the orientation of the beam splitter until the two spots  
+(cdf and edf) are aligned horizontally. 
+4. Adjust mirror B (and the beam splitter rotation if necessary) until the two spots overlap.
+5. When the two spots at the detector converge at the same point 'f ' it should be easy to produce the 
+circular interference pattern. Place the lens over the laser aperture and move it around a bit until 
+the center of the pattern is at the same position as the two spots you just aligned.  There should be 
+a nice pattern of circular fringer. Move the detector to center position, or first (if necessary) fine-
+tune the mirror orientations until the circular fringes are centred on a more convenient position.
+4

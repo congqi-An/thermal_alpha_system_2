@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+*.log
+.report_tmp/
+_q_probe/
+_selfsup_*
+captures/
+.venv/
+.idea/
+.vscode/
+.ruff_cache/

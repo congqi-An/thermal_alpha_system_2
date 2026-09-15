@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<title>基于计算机视觉和轻量VLM的干涉法测量热膨胀智能实验系统</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ═══════ 顶栏 ═══════ -->
+<header id="topbar">
+  <button id="btn-drawer" class="icon-btn" aria-label="打开控制面板">☰</button>
+  <h1>实验 Agent</h1>
+  <div id="top-badges">
+    <span id="badge-cam" class="badge">相机</span>
+    <span id="badge-temp" class="badge">温控</span>
+    <span id="badge-agent" class="badge">Agent</span>
+  </div>
+</header>
+
+<!-- ═══════ 聊天主界面 ═══════ -->
+<main id="chat-main">
+  <div id="chat-messages">
+    <div class="msg assistant">
+      <div class="msg-avatar">🤖</div>
+      <div class="msg-bubble">
+        <p>你好，我是实验 Agent。可以问我关于迈克尔逊干涉测热膨胀实验的任何问题，比如：</p>
+        <ul>
+          <li>「评估当前条纹质量」</li>
+          <li>「怎么调节光路」</li>
+          <li>「α = Nλ / (2L₀ΔT) 的原理」</li>
+        </ul>
+        <p>也可以 <b>📎 上传图片</b>（如条纹截图、实验装置照片）让我分析。</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="chat-input-area">
+    <div id="attached-image" class="hidden">
+      <img id="attached-preview" alt="待发送图片">
+      <button id="btn-remove-image" class="icon-btn small">✕</button>
+      <span id="attached-caption">已附加图片</span>
+    </div>
+    <div id="preset-chips">
+      <button class="chip" data-prompt="开始实验">开始实验</button>
+      <button id="btn-guide-prev" class="chip">⬅ 上一步</button>
+      <button id="btn-guide-next" class="chip">下一步 ➡</button>
+      <button class="chip" data-prompt="请评估当前干涉条纹的质量，并给出改进建议">评估条纹</button>
+      <button class="chip" data-prompt="给我讲解迈克尔逊干涉仪的光路调节步骤">光路指导</button>
+      <button class="chip" data-prompt="解释 α = Nλ/(2L0ΔT) 的物理原理，推导过程要完整">α 原理</button>
+      <button id="btn-mobile-report" class="chip">📄 报告</button>
+      <button id="btn-clear-history" class="chip">🗑 清空</button>
+    </div>
+    <!-- 深度思考开关 + 联网搜索 + 语音输入 (亮=开/暗=关) -->
+    <div class="think-toggle-row">
+      <button id="web-search-btn" class="think-toggle web-search-btn" onclick="toggleWebSearch()" aria-label="联网搜索">🌐</button>
+      <button id="think-toggle" class="think-toggle" onclick="toggleThinking()" aria-label="深度思考开关">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/>
+          <ellipse cx="12" cy="12" rx="8.5" ry="3.4" transform="rotate(45 12 12)"/>
+          <ellipse cx="12" cy="12" rx="8.5" ry="3.4" transform="rotate(135 12 12)"/>
+          <circle cx="18" cy="18" r="1.4" fill="currentColor" stroke="none"/>
+        </svg>
+      </button>
+      <button id="voice-btn" class="icon-btn voice-btn" onclick="toggleVoice()" aria-label="语音输入">🎤</button>
+    </div>
+    <!-- 上传文件预览 (文本/PDF/DOCX) -->
+    <div id="mobile-file-chip" class="mobile-file-chip hidden">
+      <span>📄</span><span id="mobile-file-name"></span><button id="btn-clear-file" class="icon-btn small">✕</button>
+    </div>
+    <div id="input-row">
+      <button id="btn-upload" class="icon-btn" aria-label="上传文件/图片" onclick="document.getElementById('mobile-file-input').click()">＋</button>
+      <button id="btn-attach" class="icon-btn" aria-label="附加图片">📎</button>
+      <textarea id="chat-input" rows="1" placeholder="问 Agent 任何关于实验的问题…" autocomplete="off"></textarea>
+      <button id="btn-send" class="send-btn" aria-label="发送">➤</button>
+    </div>
+    <input type="file" id="file-input" accept="image/*" class="hidden">
+    <input type="file" id="mobile-file-input" accept="image/*,.txt,.md,.csv,.json,.log,.pdf,.docx,.py" class="hidden" style="display:none">
+  </div>
+</main>
+
+<!-- ═══════ 底部状态条 ═══════ -->
+<footer id="status-bar">
+  <div class="stat"><span class="stat-label">T °C</span><span id="stat-T" class="stat-value">--</span></div>
+  <div class="stat"><span class="stat-label">N 条</span><span id="stat-N" class="stat-value">--</span></div>
+  <div class="stat"><span class="stat-label">α ×10⁻⁶</span><span id="stat-alpha" class="stat-value">--</span></div>
+  <div class="stat"><span class="stat-label">Q</span><span id="stat-Q" class="stat-value">--</span></div>
+</footer>
+
+<!-- ═══════ 抽屉（控制面板） ═══════ -->
+<div id="drawer-overlay" class="hidden"></div>
+<aside id="drawer">
+  <div class="drawer-header">
+    <h2>控制面板</h2>
+    <button id="btn-close-drawer" class="icon-btn">✕</button>
+  </div>
+  <div id="drawer-body">
+
+    <!-- ① 监控 -->
+    <details id="section-monitor" class="section">
+      <summary>📺 监控 <span class="summary-hint" id="monitor-ws-hint"></span></summary>
+      <div class="video-wrap">
+        <canvas id="video-canvas" width="640" height="480"></canvas>
+        <div id="video-idle" class="video-idle">视频未连接</div>
+      </div>
+      <div id="monitor-readout" class="readout-grid"></div>
+      <div class="charts">
+        <div class="chart-card"><div class="chart-title">φ(s) 外推 <span id="m-diag-npoint" class="diag-val">--</span></div><canvas id="chart-phi"></canvas></div>
+        <div class="chart-card"><div class="chart-title">通道分散度 <span id="m-diag-sigma" class="diag-val">--</span></div><canvas id="chart-disp"></canvas></div>
+        <div class="chart-card"><div class="chart-title">温度 T(t)</div><canvas id="chart-temp"></canvas></div>
+      </div>
+    </details>
+
+    <!-- ② 控制 -->
+    <details class="section">
+      <summary>🎛️ 控制</summary>
+
+      <details class="sub-section">
+        <summary>🌡️ 温控</summary>
+        <div class="control-row">
+          <label>目标 SV</label>
+          <input id="sv-input" type="number" step="0.5" placeholder="如 40">
+          <button id="btn-set-sv" class="btn">设定</button>
+        </div>
+        <div class="btn-group">
+          <button id="btn-heat-on" class="btn primary">PID 加热</button>
+          <button id="btn-heat-full" class="btn">满功率</button>
+          <button id="btn-heat-off" class="btn danger">关闭</button>
+        </div>
+        <button id="btn-temp-reconnect" class="btn ghost">重连温控</button>
+        <div id="temp-readout" class="readout-grid"></div>
+      </details>
+
+      <details class="sub-section">
+        <summary>📷 相机</summary>
+        <div class="btn-group">
+          <button id="btn-cam-start" class="btn primary">开始取流</button>
+          <button id="btn-cam-stop" class="btn">停止</button>
+        </div>
+        <div class="control-row">
+          <label>曝光 μs</label>
+          <input id="exposure-input" type="number" placeholder="20000">
+          <button id="btn-set-exposure" class="btn">设置</button>
+        </div>
+        <div class="control-row">
+          <label>增益 dB</label>
+          <input id="gain-input" type="number" step="0.5" placeholder="0">
+          <button id="btn-set-gain" class="btn">设置</button>
+        </div>
+        <button id="btn-capture" class="btn">采集训练帧</button>
+        <button id="btn-cycle-center" class="btn ghost">光心模式: cnn</button>
+      </details>
+
+      <details class="sub-section">
+        <summary>🔄 扫描</summary>
+        <div class="mode-row">
+          <button data-mode="temp" class="mode-btn active">温度步进</button>
+          <button data-mode="fringe" class="mode-btn">N 步进</button>
+          <button data-mode="free" class="mode-btn">即时</button>
+        </div>
+        <div class="control-row">
+          <label>起始 °C</label><input id="scan-t1" type="number" value="30">
+          <label>结束 °C</label><input id="scan-t2" type="number" value="50">
+        </div>
+        <div class="control-row">
+          <label>步长</label><input id="scan-step" type="number" step="0.5" value="5">
+          <label>n_step</label><input id="scan-nstep" type="number" value="20">
+        </div>
+        <button id="btn-scan-config" class="btn ghost">应用配置</button>
+        <div class="btn-group">
+          <button id="btn-scan-start" class="btn primary">开始扫描</button>
+          <button id="btn-scan-stop" class="btn danger">停止</button>
+        </div>
+        <div id="scan-progress"><div id="scan-progress-bar"></div></div>
+        <div id="scan-message" class="info-line"></div>
+      </details>
+
+      <details class="sub-section">
+        <summary>📏 测量</summary>
+        <div class="btn-group">
+          <button id="btn-measure-start" class="btn primary">开始计数</button>
+          <button id="btn-measure-stop" class="btn">停止结算</button>
+        </div>
+        <div id="measure-readout" class="readout-grid"></div>
+      </details>
+    </details>
+
+    <!-- ③ 结果 -->
+    <details class="section">
+      <summary>📊 结果</summary>
+      <button id="btn-refresh-result" class="btn ghost">刷新结果</button>
+      <div id="result-summary" class="result-block"></div>
+      <div id="result-budget" class="result-block"></div>
+      <div id="result-table"></div>
+    </details>
+
+  </div>
+</aside>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@14.0.0/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

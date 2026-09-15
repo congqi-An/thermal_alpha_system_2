@@ -1,0 +1,190 @@
+# Scholl 2009 Michelson Thermal Expansion
+# chars=8114, cjk=0
+
+Using a Michelson 
+Interferometer to Measure 
+Coefficient of Thermal 
+Expansion of Copper
+Ryan Scholl* and Bruce W. Liby, Manhattan College, Riverdale, NY 
+W
+hen most materials are heated they ex-
+pand.1  This concept is usually demon-
+strated using some type of mechanical 
+measurement of the linear expansion of a metal rod.2  
+We have developed an alternative laboratory method 
+for measuring thermal expansion by using a Michelson 
+interferometer. Using the method presented, interfer-
+ence, interferometry, and the principle of thermal 
+expansion can be taught concurrently. The material is 
+accessible to undergraduates and advanced high school 
+physics students.
+In a Michelson interferometer (Fig. 1), collimated 
+light is directed at a beam splitter. The resultant two 
+beams of equal amplitude are reflected by mirrors ap-
+proximately equidistant from the beam splitter. These 
+two beams recombine at the beam splitter, where 
+they interfere.
+3 Optical interference occurs when the 
+optical wave fields either cancel or reinforce. The in-
+terference pattern consists of either circular or parallel 
+fringes (Fig. 2), depending on the orientation of the 
+beams.
+4 Figure 2 shows the actual interference fringes 
+observed during the experiment. They were expanded 
+with a lens, projected onto a screen, and then photo-
+graphed with a digital camera. Destructive interference 
+(cancellation) takes place at the dark fringes while 
+constructive interference (reinforcement) takes place 
+at the bright fringes. Alternate dark or bright fringes 
+correspond to a phase difference of 2π. This, in turn, 
+corresponds to a one-wavelength difference in path 
+length between the two arms of the interferometer.  
+When one of the mirrors is moved in the direction of 
+the beam it reflects, the path length changes and the 
+image shows a shift in interference fringes.  
+The linear expansion of copper is typically ex-
+pressed as a constant given by  α,
+1,5
+Fig. 1.  Block diagram of the experimental setup (not 
+to scale).
+Fig. 2.  Interference fringes obtained with the Michelson 
+interferometer.
+316 THE PHYSICS TEACHER  ◆ Vol. 47,  2009
+
+     
+      ( 1 )α= Δ
+ΔL
+LT0
+,
+                                                            
+ such that L0 is the initial length (prior to heating), 
+ΔT is the change in temperature, and ΔL is the 
+change in length. The change in length can be ex-
+pressed as a number of wavelengths
+      ( 2 )
+Δ=L nλ
+2 ,
+                                                      
+where n is the number of fringe shifts and λ is the 
+wavelength of the laser light. A factor of 2 resides in 
+the denominator because when the mirror moves a 
+distance x, the path length changes by a distance 2 x.   
+Combining Eqs. (1) and (2), we get
+      ( 3 )
+α λ= Δ
+n
+LT2 0
+.
+                                                            
+Thus, the linear coefficient of thermal expansion α 
+can be calculated from just a few measurable vari-
+ables: the wavelength of the laser light, the number of 
+fringe shifts, the initial pipe length, and the change 
+in temperature. 
+In this experiment, the moving mirror of the Mi-
+chelson interferometer is attached to a ¾-in copper 
+pipe with Super Glue. The pipe was parallel with the 
+beam so as the copper expands the mirror will move in 
+the direction of the beam. This free end was supported 
+by a loop of thick copper wire that had minimal con-
+tact with the pipe held by an optical mount. No effects 
+due to friction were observed. The other end of the 
+pipe was clamped (Fig. 3). The total length of the pipe 
+was 59.7 cm, but for purposes of calculation the length 
+59.3 cm was used; that was the distance from the 
+clamped position to the free end. As the pipe heats, it 
+expands, changing the path length difference between 
+the two arms. As the path length changes, the dark 
+fringes become bright fringes and then dark again, cor-
+responding to the changing phase. Every time a dark 
+fringe conducts one such cycle, the path length has 
+changed a single wavelength (in our case, 612 nm pro-
+duced by an “orange” He-Ne laser). By counting these 
+fringe shifts (number of fringes that seem to move), 
+one can accurately determine the change in length of 
+the pipe.  
+ We chose copper because of its high coefficient of 
+thermal expansion, availability, and low cost. T o heat 
+the pipe we placed an Amptek silicone heat tape inside 
+of the pipe. We measured the pipe temperature with 
+two thermocouple thermometers to within 1
+oC. They 
+were affixed to the pipe 10 cm from each end with 
+aluminum tape (which remains adhesive under heat).  
+Foam pipe insulation was placed around the pipe to 
+ensure uniform heating.
+The heat tape can warm the pipe quickly, faster 
+than can be measured by the eye.  T o raise the temper-
+ature incrementally, we used a variable ac power sup-
+ply (the Amptek tape normally operates at 120 V ac).  
+Images of the fringes were recorded during the data 
+runs using a modest built-in video camera on an Apple 
+MacBook laptop computer, allowing us to recheck the 
+number of fringe shifts using the Apple QuickTime 
+program.  
+Since the Michelson interferometer is quite sensi-
+tive, only small temperature changes are needed. For 
+example, from 26.9
+oC to 37.2oC, we observed 336 
+fringe shifts, obtaining the value α = 16.8 /H11003 10-6/oC.  
+From 95.3oC to 105.8oC, we observed 358 fringe 
+shifts, obtaining the value α = 17.7 /H11003 10-6/oC. Stan-
+dard values are 16.5 /H11003 10-6/oC and 17.6 /H11003 10-6/oC 
+at 20oC and 123oC, respectively.7 For the range from 
+26.9oC to 105.8oC, we observed 2642 fringe shifts; 
+the experiment yielded a value of α = (17.3 /H11006 0.3) /H11003 
+10-6/oC. This is comparable to the usual value pre-
+sented in textbooks of α = 17 /H11003 10-6/oC.
+This Michelson interferometer can be assembled 
+in about an hour. It is important to take care that the 
+recombined beams are collinear, otherwise poor qual-
+ity or no fringes will be produced. Reducing vibrations 
+is also helpful. Figure 3 shows a digital photo of the 
+Fig. 3.  Experimental arrangement.
+THE PHYSICS TEACHER  ◆ Vol. 47, 2009 317
+
+experimental setup.
+We have demonstrated an accurate method for 
+measuring the coefficient of linear thermal expansion 
+using a Michelson interferometer. Our method allows 
+for the concurrent teaching of interference and inter-
+ferometers as well. The students can actually see the 
+changes to the fringe pattern as the pipe expands. 
+References
+ 1. R.A. Serway and J.W . Jewett, Physics for Scientists and 
+Engineers, 6th ed.  (Thomson, Belmont, CA, 2004), p. 
+587.
+2. See http://class.phys.psu.edu/213labs/ and click on 
+“Thermal Expansion” in the left column to download 
+the procedure for a laboratory experiment to measure 
+thermal expansion by mechanical means.
+3. Ref. 1, p. 1194.
+4. E. Hecht,  Optics, 4th ed. (Addison-Wesley, San Fran-
+cisco, 2002), pp. 407-410.
+5. While α actually varies with temperature, it remains es-
+sentially constant for minor temperature changes.  
+6. CRC Handbook of Chemistry and Physics , 86th ed., edit-
+ed by D.R. Lide (Taylor & Francis, Boca Raton, 2005), 
+pp. 12-196.
+7. Thermophysical Properties of Matter, Volume 12. Thermal 
+Expansion, Metallic Elements and Alloys, edited by Y.S. 
+T ouloukian (IFI/Plenum, New York, 1975), p. 76.
+PACS codes: 01.50Pa, 07.60.-j, 42.25.Hz, 65.40.De, 
+07.00.00
+Ryan Scholl is an undergraduate physics major at 
+Manhattan College. He is a member of the Executive 
+Board of Student Government and is the Second Deputy 
+Speaker of the College-Wide Senate. Ryan intends to pur-
+sue a doctorate.  
+Manhattan College, Department of Physics, 4513 
+Manhattan College Parkway, Riverdale, NY 10471; 
+rscholl.student@manhattan.edu
+     * Supported by a student grant from Manhattan College.
+Bruce W. Liby is an associate professor of physics and 
+chair of the Physics Department at Manhattan College.  
+He received his PhD in physics from the University of New 
+Mexico. 
+Manhattan College, Department of Physics, 4513 
+Manhattan College Parkway, Riverdale, NY 10471; 
+bruce.liby@manhattan.edu
+318 THE PHYSICS TEACHER  ◆ Vol. 47, 2009

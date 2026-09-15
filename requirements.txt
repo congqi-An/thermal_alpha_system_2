@@ -1,0 +1,35 @@
+# 基于计算机视觉和轻量VLM的干涉法测量热膨胀智能实验系统 — Python 依赖
+# 环境: conda ocv (Python 3.10+), CUDA 版 torch 建议按官方指引单独安装
+
+# ── Web 服务 ──
+fastapi>=0.100
+uvicorn[standard]>=0.23
+pydantic>=2.0
+python-multipart>=0.0.6  # 文件与报告图片上传
+
+# ── 数值 / 图像 ──
+numpy>=1.24
+scipy>=1.10
+opencv-python>=4.8
+
+# ── 深度学习 (CNN 帧分析) ──
+torch>=2.0
+
+# ── 硬件通信 ──
+pyserial>=3.5        # LU-926U 温控器 Modbus RTU
+
+# ── AI 服务客户端 (Ollama: qwen3-vl:4b + bge-m3) ──
+httpx>=0.24          # Agent LLM 异步客户端
+requests>=2.28       # VLM 问答 / RAG 嵌入 / 同步 HTTP
+
+# ── 可选: Agent 上传 PDF / DOCX 文本提取 ──
+# pypdf>=3.0
+# python-docx>=1.0
+
+# ── 实验报告 ──
+matplotlib>=3.7
+reportlab>=4.0
+
+# ── 外部依赖 (非 pip) ──
+# 1. Ollama (Windows 原生): ollama pull qwen3-vl:4b && ollama pull bge-m3
+# 2. 海康 MVS SDK: 安装后 SDK 的 MvImport 已随项目内置于 app/camera/MvImport/
